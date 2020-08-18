@@ -28,16 +28,14 @@
       color=""
     >
       <v-spacer id="topSpacer"></v-spacer>
-        <div id="chatbox" style="height:calc(100vh -94px); overflow-y: auto">
         <v-card
             tile
-            v-for="(chat, index) in censorchats"
+            v-for="(chat, index) in chats"
             :key="index">
           <v-card-text>
             <b>{{chat.user}}</b> : {{chat.message}}
           </v-card-text>
         </v-card>
-        </div>
 
     </v-sheet>
   </v-card>
