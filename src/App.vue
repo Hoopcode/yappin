@@ -1,14 +1,68 @@
 <template>
 <v-app>
+  <v-card class="overflow-hidden">
     <v-app-bar
-        color="cyan lighten-3"
-        dark>
-        <v-app-bar-nav-icon
-            @click="drawer = true"></v-app-bar-nav-icon>
+      absolute
+      color="#fcb69f"
+      dark
+      shrink-on-scroll
+      src="https://picsum.photos/1920/1080?random"
+      scroll-target="#scrolling-techniques-2"
+    >
+      <template v-slot:img="{ props }">
+        <v-img
+          v-bind="props"
+          gradient="to top right, rgba(19,84,122,.5), rgba(128,208,199,.8)"
+        ></v-img>
+      </template>
 
-        <v-toolbar-title>Yappin Chats</v-toolbar-title>
+      <v-app-bar-nav-icon @click="openDrawer"></v-app-bar-nav-icon>
+
+      <v-toolbar-title><b>Yappin Chats</b> (Version Aiden)</v-toolbar-title>
+
     </v-app-bar>
-    <v-navigation-drawer
+    <v-sheet
+      id="scrolling-techniques-2"
+      class="overflow-y-auto"
+      max-height= "800"
+      color=""
+    >
+      <v-spacer id="topSpacer"></v-spacer>
+        <div id="chatbox" style="height:calc(100vh -94px); overflow-y: auto">
+        <v-card
+            tile
+            v-for="(chat, index) in censorchats"
+            :key="index">
+          <v-card-text>
+            <b>{{chat.user}}</b> : {{chat.message}}
+          </v-card-text>
+        </v-card>
+        </div>
+
+    </v-sheet>
+  </v-card>
+    <v-footer
+        app
+        tile
+        padless
+        height="100"
+        dark>
+        <v-card
+            dark
+            width="100%"
+            tile
+            flat>
+            <v-card-text>
+                <v-text-field
+                    v-model="text"
+                    append-outer-icon="send"
+                    @click:append-outer="sendMessage()"
+                    @keypress.enter="sendMessage()" />
+            </v-card-text>
+        </v-card>
+    </v-footer>
+
+  <v-navigation-drawer
         v-model="drawer"
         absolute
         temporary
@@ -20,10 +74,12 @@
                 nav
                 class="py-0">
                 <v-list-item>
-                    <v-list-item-icon>
-                        <v-icon>mdi-account-circle</v-icon>
-                    </v-list-item-icon>
-                    <v-list-item-title> {{userNames[0]}}
+                    <v-file-input
+                      label="File input"
+                      prepend-icon="mdi-camera"
+                      hide-input
+                     ></v-file-input>
+                    <v-list-item-title> {{userName}}
                     </v-list-item-title>
                 </v-list-item>
 
@@ -54,47 +110,6 @@
             </v-list>
         </v-container>
     </v-navigation-drawer>
-    <v-footer
-        app
-        tile
-        padless
-        dark>
-        <v-card
-            dark
-            width="100%"
-            tile
-            flat>
-            <v-card-text>
-                <v-text-field
-                    v-model="text"
-                    append-outer-icon="send"
-                    @click:append-outer="sendMessage()"
-                    @keypress.enter="sendMessage()" />
-            </v-card-text>
-        </v-card>
-    </v-footer>
-    <v-main>
-        <v-layout
-            fill-height
-            column
-            style="min-height: 0px;">
-            <div
-                id="chatbox"
-                style="height: calc(100vh - 94px); overflow-y: auto;">
-                <v-card
-                    tile
-                    v-for="(chat, index) in chats"
-                    :key="index">
-                    <v-card-subtitle>
-                        {{chat.user}}
-                    </v-card-subtitle>
-                    <v-card-text>
-                        {{chat.message}}
-                    </v-card-text>
-                </v-card>
-            </div>
-        </v-layout>
-    </v-main>
 </v-app>
 </template>
 
@@ -103,11 +118,15 @@ import axios from 'axios'
 String.prototype.replaceAt = function (index, replacement) {
     return this.substr(0, index) + replacement + this.substr(index + replacement.length)
 }
+
+
 export default {
     name: 'App',
     data() {
         return {
-            userNames: ['acrossonbouwers', 'DanTheMan'],
+            windowHeight: window.screen.height,
+            userName: 'Anonymous',
+            userImage: new Image(50,50),
             userNameEntry: '',
             chats: [{
                     user: 'Aric',
@@ -135,14 +154,17 @@ export default {
     methods: {
         sendMessage() {
             let chat = {
-                user: this.userNames[0],
+                user: this.userName,
                 message: this.text
             }
             this.chats.push(chat)
             this.text = ''
         },
         newUserName() {
-            this.userNames.unshift(this.userNameEntry)
+            this.userName = this.userNameEntry
+        },
+        openDrawer(){
+          this.drawer = !this.drawer
         }
         //   addUser() {
         //       this.username.push(this)
@@ -156,10 +178,10 @@ export default {
                 for (let l = 0; l < this.badWords2.length; l++) {
                     for (i = 0; i < this.chats[k].length; i++) {
                         let badWord = ''
-                        let jogger = this.badWords2[l].word
-                        if (this.chats[k][i] == this.badWords2[l].word[0]) {
-                            badWord = this.badWords2[l].word[0]
-                            for (let j = 0; j < this.badWords2[l].word.length - 1; j++) {
+                        let jogger = this.badWords[l].word
+                        if (this.chats[k][i] == this.badWords[l].word[0]) {
+                            badWord = this.badWords[l].word[0]
+                            for (let j = 0; j < this.badWords[l].word.length - 1; j++) {
                                 let letter = this.chats[k][i + j + 1]
                                 if (letter == jogger[j + 1]) {
                                     badWord += this.chats[k][i + j + 1]
@@ -169,15 +191,15 @@ export default {
                                 }
                             }
                         }
-                        if (badWord == this.badWords2[l].word) {
-                            for (let s = 0; s < this.badWords2[l].stars; s++) {
-                                this.chats[k] = this.chats[k].replaceAt(i + s, '*')
+                        if (badWord == this.badWords[l].word) {
+                            for (let s = 0; s < this.badWords[l].stars; s++) {
+                                chats[k].message = chats[k].message.replaceAt(i + s, '*')
                             }
                         }
                     }
                 }
             }
-            return this.chats
+            return chats
         }
     },
     //   mounted ()
@@ -196,5 +218,8 @@ export default {
 <style>
 html {
     overflow: hidden !important;
+}
+#topSpacer{
+  padding-top: 130px;
 }
 </style>
